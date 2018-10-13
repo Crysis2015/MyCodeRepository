@@ -1,0 +1,447 @@
+<!--Pagination.cmp-->
+<aura:component controller="AccountViewerController" implements="flexipage:availableForAllPageTypes,force:appHostable,flexipage:availableForRecordHome,force:hasRecordId,force:hasSObjectName" access="global" > >
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <aura:attribute name="AccountList" type="AccountViewerController.AccountWrapper[]"/>
+    <aura:attribute name="eachAccount" type="Account"/>
+
+    <aura:attribute name="PageNumber" type="integer" default="1"/>
+    <aura:attribute name="TotalPages" type="integer" default="0"/>
+    <aura:attribute name="TotalRecords" type="integer" default="0"/>
+    <aura:attribute name="RecordStart" type="integer" default="0"/>
+    <aura:attribute name="RecordEnd" type="integer" default="0"/>
+
+    <aura:handler event="aura:waiting" action="{!c.showSpinner}"/>
+    <aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}"/>
+    <!--create a component attributs -->
+    <aura:attribute name="Spinner" type="boolean" default="false"/>
+
+    <aura:attribute name="messageType" type="String"/>
+    <aura:attribute name="message" type="String"/>
+
+
+    <aura:attribute name="newAccount" type="Account"
+    default="{
+        'SObjectType': 'Account',
+        'Name': '',
+        'Type': '',
+        'Industry': '',
+        'Phone': '',
+        'Fax': ''
+    }"/> 
+
+    <aura:attribute name="isNew" type="boolean"/>
+
+    <aura:attribute name="editAccId" type="Id"/>
+    <aura:attribute name="isEdit" type="boolean"/>
+    <aura:attribute name="timeOutTimer" type="Integer" default="2000"/>
+
+    <aura:attribute name="isMassUpdate" type="boolean"/>
+    <aura:attribute name="chosenAccountIds" type="String[]"/>
+    <aura:attribute name="chosenAccounts" type="Account[]"/>
+    <aura:attribute name="chosenAccSource" type="String"/>
+    <aura:attribute name="massProcess" type="boolean" default="false"/>
+
+
+    <aura:attribute name="objInfo" type="account" default="{sobjectType : 'Account'}" />
+    <aura:attribute name="accountSourceOptions" type="String[]"/>
+
+    <c:MessageComponent type="{!v.messageType}" message="{!v.message}"/>
+
+    <aura:if isTrue="{!v.Spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+           <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+             <span class="slds-assistive-text">Loading</span>
+             <div class="slds-spinner__dot-a"></div>
+             <div class="slds-spinner__dot-b"></div>
+           </div>
+        </div>
+    </aura:if> 
+ 
+    <div class="slds-m-around_xx-large">
+        <h1 class="slds-text-heading--medium">List of Accounts</h1>
+        <center>
+          <lightning:button onclick="{!c.openNewAccountModal}" variant="brand">New</lightning:button>&nbsp;&nbsp;&nbsp;
+          <lightning:button onclick="{!c.massUpdateAccounts}" variant="neutral">Update Account Source</lightning:button>&nbsp;&nbsp;&nbsp;
+          <lightning:button onclick="{!c.massDeleteAccounts}" variant="Destructive">Mass Delete Accounts</lightning:button>
+        </center>
+        <br/>
+        <div class="slds-float_right">
+            <ui:inputSelect aura:id="pageSize" label="Display Records Per Page: " change="{!c.onSelectChange}">
+                <ui:inputSelectOption text="10" label="10" value="true"/>
+                <ui:inputSelectOption text="15" label="15"/>
+                <ui:inputSelectOption text="20" label="20"/>
+            </ui:inputSelect>
+            <br/>
+        </div>
+        <aura:if isTrue="{!and(not(empty(v.AccountList)),v.AccountList.length>0)}">
+          <div class="slds-card">
+              <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                  <thead>
+                      <tr class="slds-text-title_caps">
+                          <th scope="col" class="responsiveHide">
+                              <strong><div class="slds-truncate" title="Select">Select</div></strong>
+                          </th>
+                          <th scope="col" class="responsiveHide">
+                              <strong><div class="slds-truncate" title="Name">Name</div></strong>
+                          </th>
+                          <th scope="col" class="responsiveHide">
+                              <strong><div class="slds-truncate" title="Account Number">Account Number</div></strong>
+                          </th>
+                          <th scope="col" class="responsiveHide">
+                              <strong><div class="slds-truncate" title="Owner Name">Owner Name</div></strong>
+                          </th>
+                          <th scope="col" class="responsiveHide">
+                              <strong><div class="slds-truncate" title="Account Source">Account Source</div></strong>
+                          </th>
+                          <th scope="col" class="responsiveHide">
+                              <strong><div class="slds-truncate" title="Annual Revenue">Annual Revenue</div></strong>
+                          </th>
+                          <th scope="col" class="responsiveHide">
+                              <strong><div class="slds-truncate" title="Type">Type</div></strong>
+                          </th>
+                          <th scope="col" class="responsiveHide">
+                              <strong><div class="slds-truncate" title="Created By">Created By</div></strong>
+                          </th>
+                          <th scope="col" class="responsiveHide">
+                              <strong><div class="slds-truncate" title="Industry">Industry</div></strong>
+                          </th>
+                          <th scope="col" class="responsiveHide">
+                              <strong><div class="slds-truncate" title="Actions">Actions</div></strong>
+                          </th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <aura:iteration items="{!v.AccountList}" var="a" indexVar="i"> 
+                          <tr onclick="{!c.getAccountDetails}" data-index="{!i}" data-id="{!a.acc.Id}">
+                              <th>
+                                  <label class="slds-checkbox">
+                                      <ui:inputCheckbox aura:id="checkAccount" value="" text="{!a.acc.Id}"/>
+                                        <span class="slds-checkbox--faux" />
+                                        <span class="slds-form-element__label"></span>
+                                  </label>
+                              </th>
+                              <th scope="row" data-label="Name" class="responsiveHide">
+                                  <div class="slds-truncate" title="{!a.acc.Name}">{!a.acc.Name}</div>
+                              </th>
+                              <th scope="row" data-label="Account Number" class="responsiveHide">
+                                  <div class="slds-truncate" title="{!a.acc.AccountNumber}">{!a.acc.AccountNumber}</div>
+                              </th>
+                              <th scope="row" data-label="Owner Name" class="responsiveHide">
+                                  <div class="slds-truncate" title="{!a.acc.Owner.Name}">{!a.acc.Owner.Name}</div>
+                              </th>
+                              <th scope="col" data-label="Account Source" class="responsiveHide">
+                                  <div class="slds-truncate" title="{!a.acc.AccountSource}">{!a.acc.AccountSource}</div>
+                              </th>
+                              <th scope="row" data-label="Annual Revenue" class="responsiveHide">
+                                  <div class="slds-truncate" title="{!a.acc.AnnualRevenue}">{!a.acc.AnnualRevenue}</div>
+                              </th>
+                              <th scope="row" data-label="Type" class="responsiveHide">
+                                  <div class="slds-truncate" title="{!a.acc.Type}">{!a.acc.Type}</div>
+                              </th>
+                              <th scope="row" data-label="Created By" class="responsiveHide">
+                                  <div class="slds-truncate" title="{!a.acc.CreatedBy.Name}">{!a.acc.CreatedBy.Name}</div>
+                              </th>
+                              <th scope="row" data-label="Industry" class="responsiveHide">
+                                  <div class="slds-truncate" title="{!a.acc.Industry}">{!a.acc.Industry}</div>
+                              </th>
+                              <td class="responsiveHide">
+                                  <button class="slds-button slds-button_success"  data-id="{!a.acc.Id}" onclick="{!c.openEditAccountModal}">Edit</button>&nbsp;&nbsp;
+                                  <button class="slds-button slds-button_destructive" data-id="{!a.acc.Id}" onclick="{!c.deleteAccount}">Delete</button>
+                              </td>
+                          </tr>
+                      </aura:iteration> 
+                  </tbody>
+              </table>
+          </div>      
+   </aura:if>
+        <div class="slds-clearfix">
+            <div class="slds-page-header" role="banner">
+                <div class="slds-float_right">            
+                    <lightning:button disabled="{!v.PageNumber == 1}" variant="brand" aura:id="prevPage" label="Prev" onclick="{!c.handlePrev}" />            
+                    <lightning:button disabled="{!v.PageNumber == v.TotalPages}" aura:id="nextPage" variant="brand" label="Next" onclick="{!c.handleNext}"/>
+                </div>
+                <p class="slds-page-header__title">{!v.RecordStart}-{!v.RecordEnd} of {!v.TotalRecords} | Page {!v.PageNumber} of {!v.TotalPages}</p>
+            </div>
+        </div>
+    </div>
+
+        <aura:if isTrue="{!v.eachAccount.Id!=NULL}">
+             <div class="slds-card">
+                 <div class="slds-card__header slds-grid">
+                <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                  <div class="slds-media__figure">
+                    <span class="slds-icon_container slds-icon-standard-account" title="account">
+                      <c:svg class="slds-button__icon slds-button__icon--large" xlinkHref="/resource/SLDS/icons/standard-sprite/svg/symbols.svg#account" ariaHidden="true" />
+                      <span class="slds-assistive-text">account</span>
+                    </span>
+                  </div>
+                  <div class="slds-media__body">
+                    <h2 class="slds-card__header-title">
+                      <a href="javascript:void(0);" class="slds-card__header-link slds-truncate" title="Accounts">
+                        <span><strong>Account Detail</strong></span>
+                      </a>
+                    </h2>
+                  </div>
+                </header>
+              </div>
+                <div class="c-container">
+                    <lightning:layout multipleRows="true">
+                        <lightning:layoutItem size="12" smallDeviceSize="6" mediumDeviceSize="4" largeDeviceSize="3" padding="around-small">
+                            <div class="slds-form-element">
+                              <span class="slds-form-element__label">Name</span>
+                              <div class="slds-form-element__control slds-border_bottom">
+                                <div class="slds-form-element__static">{!v.eachAccount.Name}</div>
+                              </div>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="12" smallDeviceSize="6" mediumDeviceSize="4" largeDeviceSize="3" padding="around-small">
+                            <div class="slds-form-element">
+                              <span class="slds-form-element__label">Account Number</span>
+                              <div class="slds-form-element__control slds-border_bottom">
+                                <div class="slds-form-element__static">{!v.eachAccount.AccountNumber}</div>
+                              </div>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="12" smallDeviceSize="6" mediumDeviceSize="4" largeDeviceSize="3" padding="around-small">
+                            <div class="slds-form-element">
+                              <span class="slds-form-element__label">Owner Name</span>
+                              <div class="slds-form-element__control slds-border_bottom">
+                                <div class="slds-form-element__static">{!v.eachAccount.Owner.Name}</div>
+                              </div>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="12" smallDeviceSize="6" mediumDeviceSize="4" largeDeviceSize="3" padding="around-small">
+                            <div class="slds-form-element">
+                              <span class="slds-form-element__label">Account Source</span>
+                              <div class="slds-form-element__control slds-border_bottom">
+                                <div class="slds-form-element__static">{!v.eachAccount.AccountSource}</div>
+                              </div>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="12" smallDeviceSize="6" mediumDeviceSize="4" largeDeviceSize="3" padding="around-small">
+                            <div class="slds-form-element">
+                              <span class="slds-form-element__label">Parent Account</span>
+                              <div class="slds-form-element__control slds-border_bottom">
+                                <div class="slds-form-element__static">{!v.eachAccount.Parent.Name}</div>
+                              </div>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="12" smallDeviceSize="6" mediumDeviceSize="4" largeDeviceSize="3" padding="around-small">
+                            <div class="slds-form-element">
+                              <span class="slds-form-element__label">Annual Revenue</span>
+                              <div class="slds-form-element__control slds-border_bottom">
+                                <div class="slds-form-element__static">{!v.eachAccount.AnnualRevenue}</div>
+                              </div>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="12" smallDeviceSize="6" mediumDeviceSize="4" largeDeviceSize="3" padding="around-small">
+                            <div class="slds-form-element">
+                              <span class="slds-form-element__label">Account Type</span>
+                              <div class="slds-form-element__control slds-border_bottom">
+                                <div class="slds-form-element__static">{!v.eachAccount.Type}</div>
+                              </div>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="12" smallDeviceSize="6" mediumDeviceSize="4" largeDeviceSize="3" padding="around-small">
+                            <div class="slds-form-element">
+                              <span class="slds-form-element__label">Created By</span>
+                              <div class="slds-form-element__control slds-border_bottom">
+                                <div class="slds-form-element__static">{!v.eachAccount.CreatedBy.Name}</div>
+                              </div>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="12" smallDeviceSize="6" mediumDeviceSize="4" largeDeviceSize="3" padding="around-small">
+                            <div class="slds-form-element">
+                              <span class="slds-form-element__label">Last Modified By</span>
+                              <div class="slds-form-element__control slds-border_bottom">
+                                <div class="slds-form-element__static">{!v.eachAccount.LastModifiedBy.Name}</div>
+                              </div>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="12" smallDeviceSize="6" mediumDeviceSize="4" largeDeviceSize="3" padding="around-small">
+                            <div class="slds-form-element">
+                              <span class="slds-form-element__label">Industry</span>
+                              <div class="slds-form-element__control slds-border_bottom">
+                                <div class="slds-form-element__static">{!v.eachAccount.Industry}</div>
+                              </div>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="12" smallDeviceSize="6" mediumDeviceSize="4" largeDeviceSize="3" padding="around-small">
+                            <div class="slds-form-element">
+                              <span class="slds-form-element__label">Description</span>
+                              <div class="slds-form-element__control slds-border_bottom">
+                                <div class="slds-form-element__static">{!v.eachAccount.Description}</div>
+                              </div>
+                            </div>
+                        </lightning:layoutItem>
+                        <lightning:layoutItem size="12" smallDeviceSize="6" mediumDeviceSize="4" largeDeviceSize="3" padding="around-small">
+                            <div class="slds-form-element">
+                              <span class="slds-form-element__label">Phone</span>
+                              <div class="slds-form-element__control slds-border_bottom">
+                                <div class="slds-form-element__static">{!v.eachAccount.Phone}</div>
+                              </div>
+                            </div>
+                        </lightning:layoutItem>
+                         <lightning:layoutItem size="12" smallDeviceSize="6" mediumDeviceSize="4" largeDeviceSize="3" padding="around-small">
+                            <div class="slds-form-element">
+                              <span class="slds-form-element__label">Fax</span>
+                              <div class="slds-form-element__control slds-border_bottom">
+                                <div class="slds-form-element__static">{!v.eachAccount.Fax}</div>
+                              </div>
+                            </div>
+                        </lightning:layoutItem>
+                    </lightning:layout>
+                </div>
+            </div>
+        </aura:if> 
+
+        <aura:if isTrue="{!v.isNew}">
+          <div>
+            <section aura:id="accountNewModal" role="dialog" tabindex="-1" aria-labelledby="accountNewModalHeading" aria-modal="true" aria-describedby="accountNewModalBody" class="slds-modal slds-fade-in-open slds-modal_large">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon class="slds-modal__close" alternativeText="Close" iconName="utility:close" onclick="{!c.closeNewAccountModal}" variant="bare-inverse" size="large"></lightning:buttonIcon>
+                        <h2 id="accountNewModalHeading" class="slds-text-heading_medium slds-hyphenate">New Account</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="accountNewModalBody">
+                          <lightning:input label="Account Name" value="{!v.newAccount.Name}" />
+                          <lightning:input label="Description" required="true" value="{!v.newAccount.Description}" />
+                          <lightning:input label="Industry" value="{!v.newAccount.Industry}" />
+                          <lightning:input label="Phone" value="{!v.newAccount.Phone}" />
+                          <lightning:input label="Fax" value="{!v.newAccount.Fax}" />
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning:button onclick="{!c.closeNewAccountModal}" variant="neutral">Cancel</lightning:button>
+                        <lightning:button onclick="{!c.createAccount}" variant="brand" >Save</lightning:button>
+                    </footer>
+                </div>
+            </section>
+            <div aura:id="accountNewModalBackdrop" class="slds-backdrop"></div>
+          </div>
+        </aura:if>
+
+
+        <aura:if isTrue="{!v.isEdit}">
+          <div>
+            <section aura:id="accountEditModal" role="dialog" tabindex="-1" aria-labelledby="accountEditModalHeading" aria-modal="true" aria-describedby="accountEditModalBody" class="slds-modal slds-fade-in-open slds-modal_large">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon class="slds-modal__close" alternativeText="Close" iconName="utility:close" onclick="{!c.closeEditAccountModal}" variant="bare-inverse" size="large"></lightning:buttonIcon>
+                        <h2 id="accountEditModalHeading" class="slds-text-heading_medium slds-hyphenate">Edit Account</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="accountEditModalBody">
+                        <force:recordEdit aura:id="edit" recordId="{!v.editAccId}"/>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning:button onclick="{!c.closeEditAccountModal}" variant="neutral">Cancel</lightning:button>
+                        <lightning:button onclick="{!c.updateAccount}" variant="brand" >Update</lightning:button>
+                    </footer>
+                </div>
+            </section>
+            <div aura:id="accountEditModalBackdrop" class="slds-backdrop"></div>
+          </div>
+        </aura:if>
+
+
+
+          <aura:if isTrue="{!v.isMassUpdate}">
+          <div>
+            <section aura:id="accountMassUpdateModal" role="dialog" tabindex="-1" aria-labelledby="accountMassUpdateModalHeading" aria-modal="true" aria-describedby="accountMassUpdateModalBody" class="slds-modal slds-fade-in-open slds-modal_large">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon class="slds-modal__close" alternativeText="Close" iconName="utility:close" onclick="{!c.closeMassUpdateAccountModal}" variant="bare-inverse" size="large"></lightning:buttonIcon>
+                        <h2 id="accountMassUpdateModalHeading" class="slds-text-heading_medium slds-hyphenate">Edit Account Source</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="accountMassUpdateModalBody">
+                                  <div class="slds-card">
+                                        <div class="slds-p-around_medium">
+                                             <div class="slds-form-element">
+                                                <label class="slds-form-element__label" for="select-01">Select Account Source</label>
+                                                <div class="slds-select_container">
+                                                   <ui:inputSelect  aura:id="accSource" class="slds-select" change="{!c.onPicklistChange}">
+                                                      <aura:iteration items="{!v.accountSourceOptions}" var="source">
+                                                           <ui:inputSelectOption text="{!source}" label="{!source}"/>
+                                                      </aura:iteration>
+                                                   </ui:inputSelect>
+                                                </div>
+                                             </div>
+                                        </div>
+
+                                        <div class="slds-p-around_medium">
+                                             <div class="slds-card">
+                                                  <h1 class="slds-text-heading--medium">Chosen Accounts</h1>
+                                                  <br/>
+                                                  <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                                                      <thead>
+                                                          <tr class="slds-text-title_caps">
+                                                              <th scope="col" class="responsiveHide">
+                                                                  <strong><div class="slds-truncate" title="Name">Name</div></strong>
+                                                              </th>
+                                                              <th scope="col" class="responsiveHide">
+                                                                  <strong><div class="slds-truncate" title="Account Number">Account Number</div></strong>
+                                                              </th>
+                                                              <th scope="col" class="responsiveHide">
+                                                                  <strong><div class="slds-truncate" title="Owner Name">Owner Name</div></strong>
+                                                              </th>
+                                                              <th scope="col" class="responsiveHide">
+                                                                  <strong><div class="slds-truncate" title="Account Source">Account Source</div></strong>
+                                                              </th>
+                                                              <th scope="col" class="responsiveHide"> 
+                                                                  <strong><div class="slds-truncate" title="Annual Revenue">Annual Revenue</div></strong>
+                                                              </th>
+                                                              <th scope="col" class="responsiveHide">
+                                                                  <strong><div class="slds-truncate" title="Type">Type</div></strong>
+                                                              </th>
+                                                              <th scope="col" class="responsiveHide">
+                                                                  <strong><div class="slds-truncate" title="Created By">Created By</div></strong>
+                                                              </th>
+                                                              <th scope="col" class="responsiveHide">
+                                                                  <strong><div class="slds-truncate" title="Industry">Industry</div></strong>
+                                                              </th>
+                                                          </tr>
+                                                      </thead>
+                                                      <tbody>
+                                                          <aura:iteration items="{!v.chosenAccounts}" var="a" indexVar="i"> 
+                                                              <tr>
+                                                                <th scope="row" data-label="Name" class="responsiveHide">
+                                                                      <div class="slds-truncate" title="{!a.Name}">{!a.Name}</div>
+                                                                  </th>
+                                                                  <th scope="row" data-label="Account Number" class="responsiveHide">
+                                                                      <div class="slds-truncate" title="{!a.AccountNumber}">{!a.AccountNumber}</div>
+                                                                  </th>
+                                                                  <th scope="row" data-label="Owner Name" class="responsiveHide">
+                                                                      <div class="slds-truncate" title="{!a.Owner.Name}">{!a.Owner.Name}</div>
+                                                                  </th>
+                                                                  <th scope="col" data-label="Account Source" class="responsiveHide">
+                                                                      <div class="slds-truncate" title="{!a.AccountSource}">{!a.AccountSource}</div>
+                                                                  </th>
+                                                                  <th scope="row" data-label="Annual Revenue" class="responsiveHide">
+                                                                      <div class="slds-truncate" title="{!a.AnnualRevenue}">{!a.AnnualRevenue}</div>
+                                                                  </th>
+                                                                  <th scope="row" data-label="Type" class="responsiveHide">
+                                                                      <div class="slds-truncate" title="{!a.Type}">{!a.Type}</div>
+                                                                  </th>
+                                                                  <th scope="row" data-label="Created By" class="responsiveHide">
+                                                                      <div class="slds-truncate" title="{!a.CreatedBy.Name}">{!a.CreatedBy.Name}</div>
+                                                                  </th>
+                                                                  <th scope="row" data-label="Industry" class="responsiveHide">
+                                                                      <div class="slds-truncate" title="{!a.Industry}">{!a.Industry}</div>
+                                                                  </th>
+                                                              </tr>
+                                                          </aura:iteration> 
+                                                      </tbody>
+                                                  </table>
+                                              </div>      
+                              </div>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning:button onclick="{!c.closeMassUpdateAccountModal}" variant="neutral">Cancel</lightning:button>
+                        <lightning:button onclick="{!c.massUpdateAccountSource}" variant="brand" >Update Account Source</lightning:button>
+                    </footer>
+                </div>
+            </section>
+            <div aura:id="accountMassUpdateModalBackdrop" class="slds-backdrop"></div>
+          </div>
+        </aura:if>
+</aura:component>
