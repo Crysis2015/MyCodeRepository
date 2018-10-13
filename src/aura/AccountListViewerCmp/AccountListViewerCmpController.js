@@ -67,6 +67,7 @@
         var modalBackdrop = component.find("accountEditModalBackdrop");
         $A.util.addClass(modal,"slds-fade-in-open");
         $A.util.addClass(modalBackdrop,"slds-backdrop_open");
+        component.set("v.Spinner", true); 
     },
 
     // Function used to close the contact modal
