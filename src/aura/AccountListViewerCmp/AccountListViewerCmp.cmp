@@ -58,9 +58,21 @@
     </aura:if> 
  
     <div class="slds-m-around_xx-large">
-        <h1 class="slds-text-heading--medium">List of Accounts</h1>
+        <h1 class="slds-text-heading--medium">List of Accounts
+             <span class="slds-icon_container" title="account">
+            <a onclick="{!c.openNewAccountModal}">
+                                                                                    <c:svg class="slds-button__icon slds-button__icon--large"
+                                                                                           xlinkHref="/resource/SLDS/SLDS/icons/utility-sprite/svg/symbols.svg#new"
+                                                                                           ariaHidden="true"
+                                                                                           />
+                                                                                </a>
+
+
+             <span class="slds-assistive-text">account</span>
+          </span>
+
+        </h1>
         <center>
-          <lightning:button onclick="{!c.openNewAccountModal}" variant="brand">New</lightning:button>&nbsp;&nbsp;&nbsp;
           <lightning:button onclick="{!c.massUpdateAccounts}" variant="neutral">Update Account Source</lightning:button>&nbsp;&nbsp;&nbsp;
           <lightning:button onclick="{!c.massDeleteAccounts}" variant="Destructive">Mass Delete Accounts</lightning:button>
         </center>

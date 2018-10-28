@@ -29,7 +29,6 @@
     },
 
     insertAccount: function(component, event, helper) {
-
     	var pageNumber = component.get("v.PageNumber");  
         var pageSize = component.find("pageSize").get("v.value");
     	var getAccList=component.get("c.getAccountData");
@@ -39,7 +38,6 @@
 		});
 
 		var getAccListAction= this.jsPromiseHandler(component,helper,getAccList);
-
     	var account = component.get("v.newAccount");
         var createAction = component.get('c.createAccountRecord');
         createAction.setParams({
@@ -57,7 +55,7 @@
 	   )
 	   .then(
 	        $A.getCallback(function(result){
-	        	if(typeof(result) != "undefined" && result.status=='success'){
+	        	if(typeof(result) != "undefined"){
 	        		component.set("v.AccountList", result.accountList);
 	                component.set("v.PageNumber", result.pageNumber);
 	                component.set("v.TotalRecords", result.totalRecords);
@@ -65,6 +63,7 @@
 	                component.set("v.RecordEnd", result.recordEnd);
 	                component.set("v.TotalPages", Math.ceil(result.totalRecords / pageSize));
 	        		component.set("v.Spinner", false);
+	        		console.log('came here');
 	        		var modal = component.find("accountNewModal");
 			        var modalBackdrop = component.find("accountNewModalBackdrop");
 			        $A.util.removeClass(modal,"slds-fade-in-open");
@@ -72,11 +71,6 @@
 			        component.set("v.message", "Account Created Successfully! Auto-refreshing in 2 seconds...");
 			        component.set("v.messageType", 'info');
 			        window.setTimeout(function(){ location.reload(true); },component.get("v.timeOutTimer"));
-	            }
-	            else if(typeof(result) != "undefined" && result.status=='error'){
-	            	component.set("v.Spinner", false);
-			        component.set("v.message", result.message);
-			        component.set("v.messageType", 'error');
 	            }
 	        })
 	   )
@@ -87,7 +81,6 @@
 		         var modalBackdrop = component.find("accountNewModalBackdrop");
 		         $A.util.removeClass(modal,"slds-fade-in-open");
 		         $A.util.removeClass(modalBackdrop,"slds-backdrop_open");
-	             //alert("error message="+error.message);
 	             component.set("v.message", error.message);
 			     component.set("v.messageType", 'error');
 	        })
