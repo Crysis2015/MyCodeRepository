@@ -25,10 +25,10 @@
                 <ui:inputNumber class="slds-input" value="{!v.LineItemInstance.Weight__c}"/>
             </td>
             <td>
-                <aura:if isTrue="{!or(v.LineItemInstance.Id==NULL,v.parentCollectionLength==1)}">
+                <aura:if isTrue="{!or(empty(v.LineItemInstance.Id),v.parentCollectionLength==1)}">
                 	<lightning:buttonIcon iconName="utility:add" variant="border-filled" onclick="{! c.AddNewRow }" size="medium" alternativeText="add new line item" />
                 </aura:if>
-                <aura:if isTrue="{!and(or(v.LineItemInstance.Id!=NULL,v.rowIndex==v.parentCollectionLength-1),v.parentCollectionLength>1)}">
+                <aura:if isTrue="{!and(or(not(empty(v.LineItemInstance.Id)),v.rowIndex==v.parentCollectionLength-1),v.parentCollectionLength>1)}">
                 	<lightning:buttonIcon iconName="utility:delete" variant="border-inverse" iconClass ="redFill" onclick="{! c.removeRow }" size="medium" alternativeText="delete this item" />
                 </aura:if>
             </td> 

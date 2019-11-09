@@ -34,7 +34,7 @@
            <div class="slds-align_absolute-center" style="height:5rem">
                 <p class="slds-p-horizontal_small">
                     <lightning:button variant="brand"
-                              label="{!v.recordId=='' ? 'Create New Shipping Invoice' : 'Update Shipping Invoice'}"
+                              label="{!empty(v.recordId) ? 'Create New Shipping Invoice' : 'Update Shipping Invoice'}"
                               title=" New Shipping Invoice"
                               onclick="{! c.openNewShippingModal }"/>
                 </p>
