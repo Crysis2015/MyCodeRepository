@@ -1,0 +1,67 @@
+<aura:component extends="c:UtilLtngCmp">    
+	<aura:attribute name="LineItemInstance" type="Item__c"/>
+    <aura:attribute name="rowIndex" type="String"/>
+    <aura:attribute name="messages" type="String[]"/> 
+    <aura:attribute name="renderRowReadOnly" type="Boolean"/>
+    <aura:attribute name="parentCollectionLength" type="Integer" default="0"/>
+    <aura:registerEvent name="DeleteRowItemEvt" type="c:DeleteRowItem"/> 
+    <aura:registerEvent name="AddNewRowItemEvt" type="c:AddNewRowItem"/>
+    <!-- Table Row -->
+    <aura:if isTrue="{!not(v.renderRowReadOnly)}">
+        <tr class="slds-text-title_caps">
+            <td> 
+                {!v.rowIndex + 1}
+            </td>
+            <td>
+                <ui:inputText   class="slds-input" value="{!v.LineItemInstance.Name}"/>
+            </td>
+            <td>
+                <ui:inputNumber class="slds-input" value="{!v.LineItemInstance.Price__c}"/>
+            </td>
+            <td>
+                <ui:inputNumber class="slds-input" value="{!v.LineItemInstance.Quantity__c}"/>
+            </td>
+            <td>
+                <ui:inputNumber class="slds-input" value="{!v.LineItemInstance.Weight__c}"/>
+            </td>
+            <td>
+                <aura:if isTrue="{!or(v.LineItemInstance.Id==NULL,v.parentCollectionLength==1)}">
+                	<lightning:buttonIcon iconName="utility:add" variant="border-filled" onclick="{! c.AddNewRow }" size="medium" alternativeText="add new line item" />
+                </aura:if>
+                <aura:if isTrue="{!and(or(v.LineItemInstance.Id!=NULL,v.rowIndex==v.parentCollectionLength-1),v.parentCollectionLength>1)}">
+                	<lightning:buttonIcon iconName="utility:delete" variant="border-inverse" iconClass ="redFill" onclick="{! c.removeRow }" size="medium" alternativeText="delete this item" />
+                </aura:if>
+            </td> 
+        </tr>
+    </aura:if>
+	<aura:if isTrue="{!v.renderRowReadOnly}">
+        <tr class="slds-text-title_caps">
+            <td> 
+                {!v.rowIndex + 1}
+            </td>
+            <td>
+                <ui:inputText   class="slds-input" value="{!v.LineItemInstance.Name}" disabled="true"/>
+            </td>
+            <td>
+                <ui:inputNumber class="slds-input" value="{!v.LineItemInstance.Price__c}" disabled="true"/>
+            </td>
+            <td>
+                <ui:inputNumber class="slds-input" value="{!v.LineItemInstance.Quantity__c}" disabled="true"/>
+            </td>
+            <td>
+                <ui:inputNumber class="slds-input" value="{!v.LineItemInstance.Weight__c}" disabled="true"/>
+            </td>
+        </tr>
+    </aura:if>     
+    <tr>
+        <td colspan="12">
+            <aura:if isTrue="{!v.messages.length>0}">
+                <ui:message title="Warning" severity="warning" closable="false">
+                    <aura:iteration items="{!v.messages}" var="item" indexVar="index">
+                        <aura:unescapedHtml value="{!item}"/>
+                    </aura:iteration>
+                </ui:message>
+            </aura:if>
+        </td>
+    </tr>
+</aura:component>

@@ -1,0 +1,160 @@
+<aura:component controller="ShippingItemController" extends="c:UtilLtngCmp" implements="lightning:actionOverride,flexipage:availableForAllPageTypes,force:appHostable,flexipage:availableForRecordHome,force:hasRecordId,force:hasSObjectName" access="global">
+<aura:attribute name="isNewShipModalOpen" type="Boolean" default="false"/>
+<aura:attribute name="shipInvoiceName" type="String" default=""/>
+<aura:attribute name="userTheme" type="String" default=""/>
+<aura:attribute name="processItemAddAction" type="Boolean" default="false"/>								
+<aura:attribute name="lineItemList" type="Item__c[]"/> 
+<aura:attribute name="messages" type="String[]"/>
+<aura:attribute name="errorType" type="String" default="warning"/>     
+<aura:attribute name="Spinner" type="Boolean"/>     
+<aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+<aura:handler name="DeleteRowItemEvt"    event="c:DeleteRowItem" action="{!c.removeDeletedRow}"/>
+<aura:handler name="AddNewRowItemEvt"    event="c:AddNewRowItem" action="{!c.addNewRow}"/>
+<aura:handler event="aura:waiting" action="{!c.showSpinner}"/>
+<aura:handler event="aura:doneWaiting" action="{!c.hideSpinner}"/>
+    
+    <div class="slds-m-around_xx-large">
+       <aura:if isTrue="{!v.Spinner}">
+            <div aura:id="spinnerId" class="slds-spinner_container">
+               <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                 <span class="slds-assistive-text">Loading</span>
+                 <div class="slds-spinner__dot-a"></div>
+                 <div class="slds-spinner__dot-b"></div>
+               </div>
+            </div>
+       </aura:if>
+       <aura:if isTrue="{!v.messages.length>0}">
+           <ui:message title="Message" severity="{!v.errorType}" closable="false">
+                <aura:iteration items="{!v.messages}" var="item" indexVar="index">
+                    <aura:unescapedHtml value="{!item}"/>
+                </aura:iteration>
+           </ui:message>
+       </aura:if> 
+       <lightning:card title="Smart Shipping Invoice" iconName="standard:shipment">
+           <div class="slds-align_absolute-center" style="height:5rem">
+                <p class="slds-p-horizontal_small">
+                    <lightning:button variant="brand"
+                              label="{!v.recordId=='' ? 'Create New Shipping Invoice' : 'Update Shipping Invoice'}"
+                              title=" New Shipping Invoice"
+                              onclick="{! c.openNewShippingModal }"/>
+                </p>
+           </div>
+        </lightning:card>
+        <aura:if isTrue="{!v.isNewShipModalOpen}">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close"
+                                                  onclick="{! c.closeNewShippingModal }"
+                                                  alternativeText="close"
+                                                  variant="bare-inverse"
+                                                  class="slds-modal__close"/>
+                            <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Shipping Invoice</h2>
+                        </header>
+                        <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                            <p><b>
+                               <div class="slds-form-element">
+                                  <div class="slds-form-element__control">
+                                    <lightning:input name="Shipping Invoice Name: " id="form-element-01" aura:id="inputShipInvName" required="true" value="{!v.shipInvoiceName}" placeholder="Shipping Invoice Name" label="Shipping Invoice Name"/>  
+                                  </div>
+                                </div> 
+                               </b>
+                            </p>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <lightning:button variant="neutral" 
+                                              label="Cancel"
+                                              title="Cancel"
+                                              onclick="{! c.closeNewShippingModal }"/>
+                            <lightning:button variant="brand" 
+                                              label="Save And Update Items"
+                                              title="Save And Update Items"
+                                              onclick="{! c.LaunchLineItemsEdit }"/>
+                        </footer>
+                    </div>
+                </section>
+        	<div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        <aura:if isTrue="{!v.processItemAddAction}">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close"
+                                                  onclick="{! c.closeItemAddModal }"
+                                                  alternativeText="close"
+                                                  variant="bare-inverse"
+                                                  class="slds-modal__close"/>
+                            <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Shipping Invoice</h2>
+                        </header>
+                        <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                            <p>
+                               <h1 class="slds-page-header__title slds-text-color_weak">Shipping Invoice</h1>
+                               <br/>
+                               <aura:if isTrue="{!v.messages.length>0}">
+                                    <ui:message title="Message" severity="{!v.errorType}" closable="false">
+                                        <aura:iteration items="{!v.messages}" var="item" indexVar="index">
+                                            <aura:unescapedHtml value="{!item}"/>
+                                        </aura:iteration>
+                                    </ui:message>
+                                </aura:if> 
+                               <br/>
+                               <div class="slds-form-element">
+                                  <div class="slds-form-element__control">
+                                    <lightning:input id="form-element-001" disabled="true" value="{!v.shipInvoiceName}" placeholder="Shipping Invoice Name" label="Shipping Invoice Name"/>  
+                                  </div>
+                                </div>
+                                <div class="slds-form-element">
+                                  <div class="slds-form-element__control">
+                                    <lightning:input id="form-element-002" disabled="true" value="{!$Locale.currencyCode}" placeholder="User Currency" label="User Currency"/>  
+                                  </div>
+                                </div>
+                            </p>
+                            <br/><br/>
+                            <h1 class="slds-page-header__title slds-text-color_weak">Create Line Items</h1>
+                            <br/>
+                            <table class="slds-table slds-table_bordered slds-table_cell-buffer"> 
+                                <thead>
+                                    <tr class="slds-text-title_caps">
+                                        <th scope="col">
+                                            <div class="slds-truncate">S.No</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Name">Name</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Price/Unit">Price/Unit</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Quantity">Quantity</div>
+                                        </th>
+                                        <th scope="col">
+                                            <div class="slds-truncate" title="Weight/Unit">Weight/Unit</div>
+                                        </th>
+                                    </tr>
+                                </thead> 
+                                <aura:if isTrue="{!v.lineItemList.length>0}">   
+                                    <tbody>
+                                        <aura:iteration items="{!v.lineItemList}" var="item" indexVar="index">
+                                                <c:DynamicLineItemRow LineItemInstance="{!item}" rowIndex="{!index}" parentCollectionLength="{!v.lineItemList.length}"/>
+                                            </aura:iteration>
+                                    </tbody>
+                                </aura:if>
+                            </table>
+                            <br/>
+                        </div>
+                        <footer class="slds-modal__footer">
+                            <lightning:button variant="neutral" 
+                                              label="Cancel"
+                                              title="Cancel"
+                                              onclick="{! c.closeItemAddModal }"/>
+                            <lightning:button variant="brand" 
+                                              label="Submit"
+                                              title="Submit"
+                                              onclick="{! c.validateLineItemData }"/>
+                        </footer>
+                    </div>
+                </section>
+        	<div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+    </div>
+</aura:component>

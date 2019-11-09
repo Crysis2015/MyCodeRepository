@@ -1,0 +1,21 @@
+<apex:page standardcontroller="Shipping_Invoice__c" showHeader="true" standardStylesheets="true" sidebar="true" docType="html-5.0">
+	<apex:includeLightning />
+      <div class="slds">
+        <!-- Target div for the Lightning component -->
+        <div id="newShipInvoiceDiv"></div>
+      </div>
+
+  <script>
+    var recordId = '{!Shipping_Invoice__c.Id}';
+    $Lightning.use("c:smartInvoiceApp", function() {
+      var attributes = {
+        recordId: recordId
+      };
+      var targetElementId = 'newShipInvoiceDiv';
+      $Lightning.createComponent('c:SmartInvoiceCmp', attributes, targetElementId,
+        function(cmp) {
+          // At this point the component has been created and loaded
+      });
+    });
+  </script>
+</apex:page>

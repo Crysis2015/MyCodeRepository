@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>Shipping_Rate</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Shipping Rate</shortDescription>
+        <value>75</value>
+    </labels>
+    <labels>
+        <fullName>Tax_Rate</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Tax Rate(%)</shortDescription>
+        <value>9.25</value>
+    </labels>
+    <labels>
+        <fullName>Threshold_SubTotal_For_Discount</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Threshold SubTotal For Discount</shortDescription>
+        <value>100</value>
+    </labels>
+</CustomLabels>

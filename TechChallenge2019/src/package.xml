@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <members>ItemObjectService</members>
+        <members>ItemObjectUtility</members>
+        <members>ItemTrigger</members>
+        <members>ObjectService</members>
+        <members>ObjectServiceFactory</members>
+        <members>ShippingItemController</members>
+        <members>SmartShippingInvoiceTest</members>
+        <members>TestClassUtil</members>
+        <name>ApexClass</name>
+    </types>
+    <types>
+        <members>SmartInvoiceVF</members>
+        <name>ApexPage</name>
+    </types>
+    <types>
+        <members>AddNewRowItem</members>
+        <members>DeleteRowItem</members>
+        <members>DynamicLineItemRow</members>
+        <members>SmartInvoiceApp</members>
+        <members>SmartInvoiceCmp</members>
+        <members>UtilLtngCmp</members>
+        <name>AuraDefinitionBundle</name>
+    </types>
+    <types>
+        <members>Smart_Shipping_Invoice</members>
+        <name>CustomApplication</name>
+    </types>
+    <types>
+        <members>*</members>
+        <name>CustomField</name>
+    </types>
+    <types>
+        <members>Shipping_Rate</members>
+        <members>Tax_Rate</members>
+        <members>Threshold_SubTotal_For_Discount</members>
+        <name>CustomLabel</name>
+    </types>
+    <types>
+        <members>Item__c</members>
+        <members>Shipping_Invoice__c</members>
+        <name>CustomObject</name>
+    </types>
+    <types>
+        <members>Item__c</members>
+        <members>Shipping_Invoice__c</members>
+        <name>CustomTab</name>
+    </types>
+    <types>
+        <members>Item__c-Item Layout</members>
+        <members>Shipping_Invoice__c-Shipping Invoice Layout</members>
+        <name>Layout</name>
+    </types>
+    <version>47.0</version>
+</Package>

@@ -1,0 +1,3 @@
+<aura:event type="COMPONENT" description="Event to remove Item" >
+    <aura:attribute name="indexVar" type="Integer" description="Use For Deleting Item" />
+</aura:event>
